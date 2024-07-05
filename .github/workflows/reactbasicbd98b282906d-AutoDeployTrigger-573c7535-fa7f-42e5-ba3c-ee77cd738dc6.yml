@@ -1,0 +1,47 @@
+name: Trigger auto deployment for reactbasicbd98b282906d
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ main ]
+    paths:
+    - '//**'
+    - '.github/workflows/reactbasicbd98b282906d-AutoDeployTrigger-573c7535-fa7f-42e5-ba3c-ee77cd738dc6.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v1
+        with:
+          client-id: ${{ secrets.REACTBASICBD98B282906D_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.REACTBASICBD98B282906D_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.REACTBASICBD98B282906D_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }} 
+          registryUrl: 
+          registryUsername: ${{ secrets.REACTBASICBD98B282906D_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.REACTBASICBD98B282906D_REGISTRY_PASSWORD }}
+          containerAppName: reactbasicbd98b282906d
+          resourceGroup: reactbasicbd98b282
+          imageToBuild: default/[parameters('containerAppName')]:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
